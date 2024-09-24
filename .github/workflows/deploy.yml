@@ -17,7 +17,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Add this line
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Ensure this secret is set in your GitHub repository
 
     steps:
     # Checkout repository
@@ -33,10 +33,10 @@ jobs:
       working-directory: ./scripts/terraform
       run: terraform init
    
-   # Create Terraform Plan
-   - name: Terraform Plan
-     working-directory: ./scripts/terraform
-     run: terraform plan -out=plan.tfplan  # Create the plan file
+    # Create Terraform Plan
+    - name: Terraform Plan
+      working-directory: ./scripts/terraform
+      run: terraform plan -out=plan.tfplan  # Create the plan file
   
     # Terraform Apply
     - name: Terraform Apply
@@ -44,13 +44,7 @@ jobs:
       env:
         TF_LOG: DEBUG  # Set logging to debug for more insights
       run: |
-        terraform apply -auto-approve \
-          -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
-          -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
-          -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
-          -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-          -var="admin_password=${{ secrets.ADMIN_PASSWORD }}" \  # Add admin_password here
-          -parallelism=5  # Adjust parallelism to manage resource creation
+        terraform apply -auto-approve plan.tfplan  # Apply the plan file
 
     # Log in to Azure Container Registry (ACR)
     - name: Log in to Azure Container Registry
