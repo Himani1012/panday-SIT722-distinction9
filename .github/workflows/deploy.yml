@@ -9,6 +9,16 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
+      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Ensure this secret is set in your GitHub repository
+
     steps:
       # Checkout repository
       - name: Checkout repository
@@ -21,8 +31,7 @@ jobs:
       # Terraform Init
       - name: Terraform Init
         working-directory: ./scripts/terraform
-        terraform:
-          init: true
+        run: terraform init
 
       # Import Existing ACR Resource
       - name: Import Existing ACR
