@@ -33,9 +33,11 @@ jobs:
         working-directory: ./scripts/terraform
         run: terraform init
 
-      # Import Existing ACR Resource
+       # Import Existing ACR Resource
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
+        env:
+          TF_VAR_admin_password: ${{ secrets.ADMIN_PASSWORD }} # Pass admin password as an environment variable
         run: |
           echo "Starting ACR import..."
           
@@ -47,6 +49,8 @@ jobs:
           terraform import $RESOURCE_ADDRESS $RESOURCE_ID
           
           echo "ACR import completed."
+          
+       
 
       # Create Terraform Plan
       - name: Terraform Plan
