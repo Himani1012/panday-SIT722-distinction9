@@ -17,7 +17,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Ensure this secret is set in your GitHub repository
+    
 
     steps:
       # Checkout repository
@@ -37,15 +37,14 @@ jobs:
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
         run: |
+        
           echo "Starting ACR import..."
-          
+        
           # Define the resource address and ID
           RESOURCE_ADDRESS="azurerm_container_registry.acr"
           RESOURCE_ID="/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9"  # Replace {registry-name} with the actual registry name
           
-          # Export ADMIN_PASSWORD for Terraform
-          export TF_VAR_admin_password=${ADMIN_PASSWORD}
-          
+        
           # Import the existing ACR
           terraform import $RESOURCE_ADDRESS $RESOURCE_ID
           
