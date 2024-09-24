@@ -33,12 +33,24 @@ jobs:
         working-directory: ./scripts/terraform
         run: terraform init
 
-        # Import Existing ACR Resource
+      # Import Existing ACR Resource
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
         run: |
-          terraform import azurerm_container_registry.acr /subscriptions/1c0c4b42-8d2c-4f69-ad33-44a89af6f08e/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+          echo "Starting ACR import..."
+          
+          # Debugging: Print relevant environment variables
+          echo "Subscription ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}"
+          echo "Resource Group: deakinuni"
+          echo "Registry Name: {registry-name}"  # Replace with the actual registry name
 
+          # Debugging: Show the current Terraform state (if any)
+          terraform state list
+
+          # Import the existing ACR
+          terraform import azurerm_container_registry.acr /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/{registry-name}
+          
+          echo "ACR import completed."
 
       # Create Terraform Plan
       - name: Terraform Plan
@@ -55,9 +67,9 @@ jobs:
       - name: Terraform Apply
         working-directory: ./scripts/terraform
         env:
-          TF_LOG: DEBUG # Set logging to debug for more insights
+          TF_LOG: DEBUG  # Set logging to debug for more insights
         run: |
-          terraform apply -auto-approve plan.tfplan   
+          terraform apply -auto-approve plan.tfplan
           terraform plan -out=plan.tfplan -parallelism=10  
 
       # Log in to Azure Container Registry (ACR)
