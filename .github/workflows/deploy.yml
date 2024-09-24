@@ -39,16 +39,12 @@ jobs:
         run: |
           echo "Starting ACR import..."
           
-          # Debugging: Print relevant environment variables
-          echo "Subscription ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}"
-          echo "Resource Group: deakinuni"
-          echo "Registry Name: distinctionweek9"  # Replace with the actual registry name
-
-          # Debugging: Show the current Terraform state (if any)
-          terraform state list
+          # Define the resource address and ID
+          RESOURCE_ADDRESS="azurerm_container_registry.acr"
+          RESOURCE_ID="/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9" # Replace {registry-name} with actual name
 
           # Import the existing ACR
-          terraform import azurerm_container_registry.acr/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+          terraform import $RESOURCE_ADDRESS $RESOURCE_ID
           
           echo "ACR import completed."
 
