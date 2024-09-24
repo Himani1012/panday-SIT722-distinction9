@@ -9,16 +9,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Ensure this secret is set in your GitHub repository
-
     steps:
       # Checkout repository
       - name: Checkout repository
@@ -31,7 +21,8 @@ jobs:
       # Terraform Init
       - name: Terraform Init
         working-directory: ./scripts/terraform
-        run: terraform init
+        terraform:
+          init: true
 
       # Import Existing ACR Resource
       - name: Import Existing ACR
@@ -57,22 +48,23 @@ jobs:
       # Create Terraform Plan
       - name: Terraform Plan
         working-directory: ./scripts/terraform
-        run: |
-          terraform plan -out=plan.tfplan \
-            -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
-            -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
-            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
-            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-            -var="admin_password=${{ secrets.ADMIN_PASSWORD }}"
+        terraform:
+          vars:
+            client_id: ${{ secrets.ARM_CLIENT_ID }}
+            client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+            tenant_id: ${{ secrets.ARM_TENANT_ID }}
+            subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+            admin_password: ${{ secrets.ADMIN_PASSWORD }}
+          plan: -out=plan.tfplan
 
       # Terraform Apply
       - name: Terraform Apply
         working-directory: ./scripts/terraform
         env:
           TF_LOG: DEBUG  # Set logging to debug for more insights
-        run: |
-          terraform apply -auto-approve plan.tfplan
-          terraform plan -out=plan.tfplan -parallelism=10  
+        terraform:
+          apply: -auto-approve plan.tfplan
+          plan: -out=plan.tfplan -parallelism=10  
 
       # Log in to Azure Container Registry (ACR)
       - name: Log in to Azure Container Registry
