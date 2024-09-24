@@ -14,7 +14,6 @@ jobs:
       REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
       REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      
 
     steps:
     # Checkout repository
@@ -27,11 +26,11 @@ jobs:
 
     # Terraform Init and Apply
     - name: Terraform Init
-      working-directory: ./scripts
+      working-directory: ./scripts/terraform  # Updated to point to the correct folder
       run: terraform init
 
     - name: Terraform Apply
-      working-directory: ./scripts
+      working-directory: ./scripts/terraform  # Updated to point to the correct folder
       run: terraform apply -auto-approve
 
     # Log in to Azure Container Registry (ACR)
