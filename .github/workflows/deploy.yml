@@ -13,7 +13,10 @@ jobs:
       CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
       REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
       REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
     steps:
     # Checkout repository
@@ -24,14 +27,20 @@ jobs:
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v1
 
-    # Terraform Init and Apply
+    # Terraform Init
     - name: Terraform Init
-      working-directory: ./scripts/terraform  # Updated to point to the correct folder
+      working-directory: ./scripts
       run: terraform init
 
+    # Terraform Apply
     - name: Terraform Apply
-      working-directory: ./scripts/terraform  # Updated to point to the correct folder
-      run: terraform apply -auto-approve
+      working-directory: ./scripts
+      run: |
+        terraform apply -auto-approve \
+          -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
+          -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
+          -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+          -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}"
 
     # Log in to Azure Container Registry (ACR)
     - name: Log in to Azure Container Registry
