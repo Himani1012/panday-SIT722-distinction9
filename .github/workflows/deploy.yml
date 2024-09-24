@@ -50,7 +50,7 @@ jobs:
           export TF_VAR_ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}
           export TF_VAR_ARM_TENANT_ID=${ARM_TENANT_ID}
           export TF_VAR_ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID}
-          export TF_VAR_admin_password=${ADMIN_PASSWORD}
+          export TF_VAR_CONTAINER_REGISTRY=${CONTAINER_REGISTRY}
           
           # Import the existing ACR
           terraform import $RESOURCE_ADDRESS $RESOURCE_ID
