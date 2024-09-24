@@ -1,7 +1,12 @@
-provider "azurerm" {
-  version = "2.34.0"
-  use_msi = true
+terraform {
+  required_providers {
+    azurerm = {
+      version = "2.34.0"
+    }
+  }
+}
 
+provider "azurerm" {
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
