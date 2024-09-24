@@ -21,10 +21,6 @@ variable "ARM_SUBSCRIPTION_ID" {
   description = "Azure Resource Manager Subscription ID"
 }
 
-variable "ADMIN_PASSWORD" {
-  type        = string
-  description = "Admin password for Azure Container Registry"
-}
 
 variable "CONTAINER_REGISTRY" {
   type        = string
