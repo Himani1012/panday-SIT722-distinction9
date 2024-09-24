@@ -1,0 +1,67 @@
+name: Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
+      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Install Terraform
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    # Terraform Init and Apply
+    - name: Terraform Init
+      working-directory: ./scripts
+      run: terraform init
+
+    - name: Terraform Apply
+      working-directory: ./scripts
+      run: terraform apply -auto-approve
+
+    # Log in to Azure Container Registry (ACR)
+    - name: Log in to Azure Container Registry
+      run: echo ${{ secrets.REGISTRY_PW }} | docker login ${{ secrets.CONTAINER_REGISTRY }} -u ${{ secrets.REGISTRY_UN }} --password-stdin
+
+    # Build Docker images for book-catalog and inventory-management services
+    - name: Build book-catalog Docker image
+      run: docker build -t ${{ secrets.CONTAINER_REGISTRY }}/book-catalog:latest ./book-catalog
+
+    - name: Build inventory-management Docker image
+      run: docker build -t ${{ secrets.CONTAINER_REGISTRY }}/inventory-management:latest ./inventory-management
+
+    # Push Docker images to Azure Container Registry (ACR)
+    - name: Push book-catalog Docker image
+      run: docker push ${{ secrets.CONTAINER_REGISTRY }}/book-catalog:latest
+
+    - name: Push inventory-management Docker image
+      run: docker push ${{ secrets.CONTAINER_REGISTRY }}/inventory-management:latest
+
+    # Set up Kubectl to interact with AKS
+    - name: Set up Kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.24.2'
+
+    # Deploy the microservices to AKS
+    - name: Deploy book-catalog and inventory-management to AKS
+      run: |
+        kubectl apply -f ./k8s/deployment.yaml
