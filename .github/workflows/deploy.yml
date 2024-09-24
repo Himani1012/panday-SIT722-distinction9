@@ -50,6 +50,8 @@ jobs:
           export TF_VAR_ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}
           export TF_VAR_ARM_TENANT_ID=${ARM_TENANT_ID}
           export TF_VAR_ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID}
+          export TF_VAR_CONTAINER_PW=${CONTAINER_PW}
+          export TF_VAR_CONTAINER_UN=${CONTAINER_UN}
           export TF_VAR_CONTAINER_REGISTRY=${CONTAINER_REGISTRY}
           
           # Import the existing ACR
