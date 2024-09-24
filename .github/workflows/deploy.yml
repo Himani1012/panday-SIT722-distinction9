@@ -32,7 +32,12 @@ jobs:
     - name: Terraform Init
       working-directory: ./scripts/terraform
       run: terraform init
-
+   
+   # Create Terraform Plan
+   - name: Terraform Plan
+     working-directory: ./scripts/terraform
+     run: terraform plan -out=plan.tfplan  # Create the plan file
+  
     # Terraform Apply
     - name: Terraform Apply
       working-directory: ./scripts/terraform
