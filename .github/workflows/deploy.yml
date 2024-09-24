@@ -48,10 +48,10 @@ jobs:
       - name: Terraform Apply
         working-directory: ./scripts/terraform
         env:
-          TF_LOG: TRACE # Set logging to debug for more insights
+          TF_LOG: DEBUG # Set logging to debug for more insights
         run: |
-          terraform apply -auto-approve plan.tfplan  # Apply the plan file
-          terraform plan -out=plan.tfplan -parallelism=10  # Example
+          terraform apply -auto-approve plan.tfplan   
+          terraform plan -out=plan.tfplan -parallelism=10  
 
       # Log in to Azure Container Registry (ACR)
       - name: Log in to Azure Container Registry
