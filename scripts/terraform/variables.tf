@@ -21,4 +21,9 @@ variable "subscription_id" {
   description = "The subscription ID for the Azure resources."
   type        = string
 }
+variable "admin_password" {
+  type        = string
+  description = "The admin password for the Azure Container Registry"
+
+}
 
