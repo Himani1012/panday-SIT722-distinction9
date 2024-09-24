@@ -17,6 +17,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  # Add this line
 
     steps:
     # Checkout repository
@@ -43,6 +44,7 @@ jobs:
           -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
           -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
           -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+          -var="admin_password=${{ secrets.ADMIN_PASSWORD }}" \  # Add admin_password here
           -parallelism=5  # Adjust parallelism to manage resource creation
 
     # Log in to Azure Container Registry (ACR)
