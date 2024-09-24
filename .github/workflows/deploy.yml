@@ -33,6 +33,13 @@ jobs:
         working-directory: ./scripts/terraform
         run: terraform init
 
+        # Import Existing ACR Resource
+      - name: Import Existing ACR
+        working-directory: ./scripts/terraform
+        run: |
+          terraform import azurerm_container_registry.acr /subscriptions/1c0c4b42-8d2c-4f69-ad33-44a89af6f08e/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+
+
       # Create Terraform Plan
       - name: Terraform Plan
         working-directory: ./scripts/terraform
