@@ -36,13 +36,15 @@ jobs:
       # Import Existing ACR Resource
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
+        env:
+          TF_LOG: DEBUG  # Set logging to debug for more insights
         run: |
           echo "Starting ACR import..."
           
           # Debugging: Print relevant environment variables
           echo "Subscription ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}"
           echo "Resource Group: deakinuni"
-          echo "Registry Name: {registry-name}"  # Replace with the actual registry name
+          echo "Registry Name: distinctionweek9"  # Replace with the actual registry name
 
           # Debugging: Show the current Terraform state (if any)
           terraform state list
