@@ -42,7 +42,7 @@ jobs:
     - name: Terraform Apply
       working-directory: ./scripts/terraform
       env:
-        TF_LOG: DEBUG  # Set logging to debug for more insights
+        TF_LOG: TRACE # Set logging to debug for more insights
       run: |
         terraform apply -auto-approve plan.tfplan  # Apply the plan file
         terraform plan -out=plan.tfplan -parallelism=10  # Example
