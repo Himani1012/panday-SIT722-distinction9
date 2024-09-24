@@ -1,4 +1,4 @@
-resource "azurerm_kubernetes_cluster" "credittaskweek8" {
+resource "azurerm_kubernetes_cluster" "distinctionweek9" {
   name                = "distinctionweek9"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
