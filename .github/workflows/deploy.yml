@@ -45,6 +45,13 @@ jobs:
           RESOURCE_ID="/subscriptions/1c0c4b42-8d2c-4f69-ad33-44a89af6f08e/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9"  # Replace {registry-name} with the actual registry name
           
         
+          # Export necessary variables for Terraform
+          export TF_VAR_ARM_CLIENT_ID=${ARM_CLIENT_ID}
+          export TF_VAR_ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}
+          export TF_VAR_ARM_TENANT_ID=${ARM_TENANT_ID}
+          export TF_VAR_ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID}
+          export TF_VAR_admin_password=${ADMIN_PASSWORD}
+          
           # Import the existing ACR
           terraform import $RESOURCE_ADDRESS $RESOURCE_ID
           
