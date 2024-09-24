@@ -1,1 +1,83 @@
 # Your Solution
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: book-catalog
+  template:
+    metadata:
+      labels:
+        app: book-catalog
+    spec:
+      containers:
+      - name: book-catalog
+        image: distinctionweek9.azurecr.io/book-catalog:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://distinctionweek9_user:oOeTENzpXjr7yJEuRBfhzI9UsQbioT13@dpg-cromdti3esus73c3irpg-a.oregon-postgres.render.com/distinctionweek9"
+        - name: PORT
+          value: "5000"  # Add the PORT environment variable
+      imagePullSecrets:
+      - name: acr-secret
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-management
+  template:
+    metadata:
+      labels:
+        app: inventory-management
+    spec:
+      containers:
+      - name: inventory-management
+        image: distinctionweek9.azurecr.io/inventory-management:latest
+        ports:
+        - containerPort: 5002
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://distinctionweek9_user:oOeTENzpXjr7yJEuRBfhzI9UsQbioT13@dpg-cromdti3esus73c3irpg-a.oregon-postgres.render.com/distinctionweek9"
+        - name: PORT
+          value: "5002"  # Add the PORT environment variable
+      imagePullSecrets:
+      - name: acr-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-catalog-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: book-catalog
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-management-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: inventory-management
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5002
