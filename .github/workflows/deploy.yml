@@ -33,24 +33,23 @@ jobs:
         working-directory: ./scripts/terraform
         run: terraform init
 
-       # Import Existing ACR Resource
+      # Import Existing ACR Resource
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
-        env:
-          TF_VAR_admin_password: ${{ secrets.ADMIN_PASSWORD }} # Pass admin password as an environment variable
         run: |
           echo "Starting ACR import..."
           
           # Define the resource address and ID
           RESOURCE_ADDRESS="azurerm_container_registry.acr"
-          RESOURCE_ID="/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9" # Replace {registry-name} with actual name
-
+          RESOURCE_ID="/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9"  # Replace {registry-name} with the actual registry name
+          
+          # Export ADMIN_PASSWORD for Terraform
+          export TF_VAR_admin_password=${ADMIN_PASSWORD}
+          
           # Import the existing ACR
-          terraform import $RESOURCE_ADDRESS $RESOURCE_ID
+          terraform import $RESOURCE_ADDRESS $RESOURCE_ID -var "admin_password=${ADMIN_PASSWORD}"
           
-          echo "ACR import completed."
-          
-       
+          echo "ACR import completed." 
 
       # Create Terraform Plan
       - name: Terraform Plan
