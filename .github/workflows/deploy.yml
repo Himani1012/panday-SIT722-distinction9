@@ -36,8 +36,6 @@ jobs:
       # Import Existing ACR Resource
       - name: Import Existing ACR
         working-directory: ./scripts/terraform
-        env:
-          TF_LOG: DEBUG  # Set logging to debug for more insights
         run: |
           echo "Starting ACR import..."
           
@@ -50,30 +48,29 @@ jobs:
           terraform state list
 
           # Import the existing ACR
-          terraform import azurerm_container_registry.acr /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+          terraform import azurerm_container_registry.acr/subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
           
           echo "ACR import completed."
 
       # Create Terraform Plan
       - name: Terraform Plan
         working-directory: ./scripts/terraform
-        terraform:
-          vars:
-            client_id: ${{ secrets.ARM_CLIENT_ID }}
-            client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-            tenant_id: ${{ secrets.ARM_TENANT_ID }}
-            subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-            admin_password: ${{ secrets.ADMIN_PASSWORD }}
-          plan: -out=plan.tfplan
+        run: |
+          terraform plan -out=plan.tfplan \
+            -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
+            -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
+            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+            -var="admin_password=${{ secrets.ADMIN_PASSWORD }}"
 
       # Terraform Apply
       - name: Terraform Apply
         working-directory: ./scripts/terraform
         env:
           TF_LOG: DEBUG  # Set logging to debug for more insights
-        terraform:
-          apply: -auto-approve plan.tfplan
-          plan: -out=plan.tfplan -parallelism=10  
+        run: |
+          terraform apply -auto-approve plan.tfplan
+          terraform plan -out=plan.tfplan -parallelism=10  
 
       # Log in to Azure Container Registry (ACR)
       - name: Log in to Azure Container Registry
