@@ -48,7 +48,7 @@ jobs:
           terraform state list
 
           # Import the existing ACR
-          terraform import azurerm_container_registry.acr /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/{registry-name}
+          terraform import azurerm_container_registry.acr /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
           
           echo "ACR import completed."
 
