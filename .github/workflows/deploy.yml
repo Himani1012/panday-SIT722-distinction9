@@ -47,10 +47,9 @@ jobs:
           export TF_VAR_admin_password=${ADMIN_PASSWORD}
           
           # Import the existing ACR
-          terraform import $RESOURCE_ADDRESS $RESOURCE_ID -var "admin_password=${ADMIN_PASSWORD}"
+          terraform import $RESOURCE_ADDRESS $RESOURCE_ID
           
-          echo "ACR import completed." 
-
+          echo "ACR import completed."
       # Create Terraform Plan
       - name: Terraform Plan
         working-directory: ./scripts/terraform
