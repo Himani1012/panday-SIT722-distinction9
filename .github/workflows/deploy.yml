@@ -1,21 +1,10 @@
-# GitHub Actions workflow.
-#
-# Automatically deploys the microservice to Kubernetes on push to the main branch.
-# For real use, you might want to restrict this to the "prod" branch.
-
 name: Deploy Microservices
 
 on:
-  #
-  # Deploy the microservice on push to any branch of this code repository.
-  #
   push: 
     branches:
       - master
 
-  #
-  # Allows deployment to be invoked manually through the GitHub Actions user interface.
-  #
   workflow_dispatch: 
 
 jobs:
@@ -25,60 +14,41 @@ jobs:
     
     env:
       VERSION: ${{ github.sha }}
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
       AKS_RESOURCE_GROUP: "deakinuni"
       AKS_CLUSTER_NAME: "distinctionweek9"
 
     steps:
       
-      # Checks-out your repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v3
 
-      #
-      # Sets up Terraform for infrastructure management.
-      #
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      # Initialize Terraform
       - name: Initialize Terraform
         run: terraform init
         working-directory: ./scripts/terraform
 
-      # Apply Terraform
       - name: Apply Terraform
-        run: terraform apply -auto-approve
-        env:
-          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: terraform apply -auto-approve \
+          -var "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" \
+          -var "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" \
+          -var "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" \
+          -var "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+          -var "CONTAINER_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}" \
+          -var "REGISTRY_UN=${{ secrets.REGISTRY_UN }}" \
+          -var "REGISTRY_PW=${{ secrets.REGISTRY_PW }}"
         working-directory: ./scripts/terraform
 
-      #
-      # Builds the Docker image.
-      #
-      - name: Build
-        run: ./scripts/build-image.sh
-
-      #
-      # Publishes the Docker image to the container registry.
-      #
-      - name: Publish
-        run: ./scripts/push-image.sh
-
-      #
-      # Installs Kubectl and connects it to the cluster.
-      #
       - name: Install Kubectl
         run: |
           az aks install-cli
           az aks get-credentials --resource-group ${{ env.AKS_RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
 
-      #
-      # Expands the configuration template and deploys the microservice.
-      #
+      - name: Build
+        run: ./scripts/build-image.sh
+
+      - name: Publish
+        run: ./scripts/push-image.sh
+
       - name: Deploy
         run: ./scripts/deploy.sh
