@@ -32,7 +32,7 @@ jobs:
       - name: Import existing Container Registry
         working-directory: ./scripts/terraform
         run: |
-          terraform import azurerm_container_registry.your_distinctionweek9 /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+          terraform import azurerm_container_registry.distinctionweek9 /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
 
 
       - name: Apply Terraform
