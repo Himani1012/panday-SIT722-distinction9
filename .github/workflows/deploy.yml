@@ -1,108 +1,52 @@
-name: Deploy to AKS
+name: Deploy Microservices
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-    
 
     steps:
-      # Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-      # Install Terraform
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v1
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.0
 
-      # Terraform Init
-      - name: Terraform Init
-        working-directory: ./scripts/terraform
-        run: terraform init
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.ARM_CLIENT_ID }}
+        tenant-id: ${{ secrets.ARM_TENANT_ID }}
+        subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
 
-      # Import Existing ACR Resource
-      - name: Import Existing ACR
-        working-directory: ./scripts/terraform
-        run: |
-        
-          echo "Starting ACR import..."
-        
-          # Define the resource address and ID
-          RESOURCE_ADDRESS="azurerm_container_registry.acr"
-          RESOURCE_ID="/subscriptions/1c0c4b42-8d2c-4f69-ad33-44a89af6f08e/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9"  # Replace {registry-name} with the actual registry name
-          
-        
-          # Export necessary variables for Terraform
-          export TF_VAR_ARM_CLIENT_ID=${ARM_CLIENT_ID}
-          export TF_VAR_ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}
-          export TF_VAR_ARM_TENANT_ID=${ARM_TENANT_ID}
-          export TF_VAR_ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID}
-          export TF_VAR_CONTAINER_PW=${CONTAINER_PW}
-          export TF_VAR_CONTAINER_UN=${CONTAINER_UN}
-          export TF_VAR_CONTAINER_REGISTRY=${CONTAINER_REGISTRY}
-          
-          # Import the existing ACR
-          terraform import $RESOURCE_ADDRESS $RESOURCE_ID
-          
-          echo "ACR import completed."
-      # Create Terraform Plan
-      - name: Terraform Plan
-        working-directory: ./scripts/terraform
-        run: |
-          terraform plan -out=plan.tfplan \
-            -var="client_id=${{ secrets.ARM_CLIENT_ID }}" \
-            -var="client_secret=${{ secrets.ARM_CLIENT_SECRET }}" \
-            -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
-            -var="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-            -var="admin_password=${{ secrets.ADMIN_PASSWORD }}"
+    - name: Terraform Init
+      run: terraform init
 
-      # Terraform Apply
-      - name: Terraform Apply
-        working-directory: ./scripts/terraform
-        env:
-          TF_LOG: DEBUG  # Set logging to debug for more insights
-        run: |
-          terraform apply -auto-approve plan.tfplan
-          terraform plan -out=plan.tfplan -parallelism=10  
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
 
-      # Log in to Azure Container Registry (ACR)
-      - name: Log in to Azure Container Registry
-        run: echo ${{ secrets.REGISTRY_PW }} | docker login ${{ secrets.CONTAINER_REGISTRY }} -u ${{ secrets.REGISTRY_UN }} --password-stdin
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
 
-      # Build Docker images for book-catalog and inventory-management services
-      - name: Build book-catalog Docker image
-        run: docker build -t ${{ secrets.CONTAINER_REGISTRY }}/book-catalog:latest ./book-catalog
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-      - name: Build inventory-management Docker image
-        run: docker build -t ${{ secrets.CONTAINER_REGISTRY }}/inventory-management:latest ./inventory-management
+    - name: Build and Push Docker Images
+      run: |
+        docker build -t ${{ secrets.REGISTRYZ_UN }}.azurecr.io/book-catalog:latest ./book_catalog
+        docker build -t ${{ secrets.REGISTRYZ_UN }}.azurecr.io/inventory-management:latest ./inventory_management
+        echo ${{ secrets.REGISTRY_PW }} | docker login ${{ secrets.REGISTRY_UN }}.azurecr.io --username ${{ secrets.REGISTRY_UN }} --password-stdin
+        docker push ${{ secrets.REGISTRY_UN }}.azurecr.io/book-catalog:latest
+        docker push ${{ secrets.REGISTRY_UN }}.azurecr.io/inventory-management:latest
 
-      # Push Docker images to Azure Container Registry (ACR)
-      - name: Push book-catalog Docker image
-        run: docker push ${{ secrets.CONTAINER_REGISTRY }}/book-catalog:latest
-
-      - name: Push inventory-management Docker image
-        run: docker push ${{ secrets.CONTAINER_REGISTRY }}/inventory-management:latest
-
-      # Set up Kubectl to interact with AKS
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.24.2'
-
-      # Deploy the microservices to AKS
-      - name: Deploy book-catalog and inventory-management to AKS
-        run: |
-          kubectl apply -f ./k8s/deployment.yaml
+    - name: Deploy to AKS
+      run: |
+        kubectl apply -f k8s/book_catalog-deployment.yaml
+        kubectl apply -f k8s/inventory_management-deployment.yaml
