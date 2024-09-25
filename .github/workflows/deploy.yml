@@ -14,7 +14,7 @@ jobs:
     
     env:
       VERSION: ${{ github.sha }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_SUBSCRIPTION_ID: "1c0c4b42-8d2c-4f69-ad33-44a89af6f08e"
       AKS_RESOURCE_GROUP: "deakinuni"
       AKS_CLUSTER_NAME: "distinctionweek9"
 
@@ -32,7 +32,7 @@ jobs:
       - name: Import existing Container Registry
         working-directory: ./scripts/terraform
         run: |
-          terraform import azurerm_container_registry.your_distinctionweek9 /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+          terraform import azurerm_container_registry.your_distinctionweek9 /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
 
 
       - name: Apply Terraform
