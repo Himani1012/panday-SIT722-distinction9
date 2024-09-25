@@ -17,7 +17,7 @@ jobs:
 
       - name: Log in to Azure
         run: |
-          echo "${{ secrets.ARM_CLIENT_SECRET }}" | az login --service-principal -u "${{ secrets.ARM_CLIENT_ID }}" --tenant "${{ secrets.ARM_TENANT_ID }}" --password-stdin
+          echo "${{ secrets.ARM_CLIENT_SECRET }}" | az login --service-principal -u "${{ secrets.ARM_CLIENT_ID }}" --tenant "${{ secrets.ARM_TENANT_ID }}" 
       - name: Log in to Azure Container Registry
         run: |
           az acr login --name ${{ secrets.CONTAINER_REGISTRY }}
