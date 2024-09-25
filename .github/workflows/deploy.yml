@@ -15,6 +15,9 @@ jobs:
     env:
       VERSION: ${{ github.sha }}
       ARM_SUBSCRIPTION_ID: "1c0c4b42-8d2c-4f69-ad33-44a89af6f08e"
+      ARM_CLIENT_ID: "a65b22b8-2d1e-4315-8b91-5c0fbe51c39d"
+      ARM_TENANT_ID: "2625129d-99a2-4df5-988e-5c5d07e7d0fb"
+      CONTAINER_REGISTRY: "distinctionweek9.azurecr.io"
       AKS_RESOURCE_GROUP: "deakinuni"
       AKS_CLUSTER_NAME: "distinctionweek9"
 
@@ -38,11 +41,11 @@ jobs:
       - name: Apply Terraform
         run: |
           terraform apply -auto-approve \
-            -var "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" \
+            -var "ARM_CLIENT_ID=${{ env.ARM_CLIENT_ID }}" \
             -var "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" \
-            -var "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" \
-            -var "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-            -var "CONTAINER_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}" \
+            -var "ARM_TENANT_ID=${{ env.ARM_TENANT_ID }}" \
+            -var "ARM_SUBSCRIPTION_ID=${{ env.ARM_SUBSCRIPTION_ID }}" \
+            -var "CONTAINER_REGISTRY=${{ env.CONTAINER_REGISTRY }}" \
             -var "REGISTRY_UN=${{ secrets.REGISTRY_UN }}" \
             -var "REGISTRY_PW=${{ secrets.REGISTRY_PW }}"
         working-directory: ./scripts/terraform
