@@ -3,7 +3,7 @@ name: Deploy Microservices
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -15,9 +15,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Log in to Azure
+        run: |
+          az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
+
       - name: Log in to Azure Container Registry
         run: |
-          echo "${{ secrets.REGISTRY_PW }}" | docker login ${{ secrets.CONTAINER_REGISTRY }} -u ${{ secrets.CONTAINER_UN }} --password-stdin
+          az acr login --name ${{ secrets.CONTAINER_REGISTRY }}
 
       - name: Build and push book_catalog Docker image
         run: |
