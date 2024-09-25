@@ -28,6 +28,11 @@ jobs:
         run: terraform init
         working-directory: ./scripts/terraform
 
+      - name: Import existing Container Registry
+        run: |
+          terraform import azurerm_container_registry.your_distinctionweek9 /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/deakinuni/providers/Microsoft.ContainerRegistry/registries/distinctionweek9
+
+
       - name: Apply Terraform
         run: |
           terraform apply -auto-approve \
