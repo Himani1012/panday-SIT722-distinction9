@@ -29,14 +29,15 @@ jobs:
         working-directory: ./scripts/terraform
 
       - name: Apply Terraform
-        run: terraform apply -auto-approve \
-          -var "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" \
-          -var "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" \
-          -var "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" \
-          -var "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
-          -var "CONTAINER_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}" \
-          -var "REGISTRY_UN=${{ secrets.REGISTRY_UN }}" \
-          -var "REGISTRY_PW=${{ secrets.REGISTRY_PW }}"
+        run: |
+          terraform apply -auto-approve \
+            -var "ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}" \
+            -var "ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}" \
+            -var "ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}" \
+            -var "ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+            -var "CONTAINER_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}" \
+            -var "REGISTRY_UN=${{ secrets.REGISTRY_UN }}" \
+            -var "REGISTRY_PW=${{ secrets.REGISTRY_PW }}"
         working-directory: ./scripts/terraform
 
       - name: Install Kubectl
