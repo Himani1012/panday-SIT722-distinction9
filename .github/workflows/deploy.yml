@@ -1,50 +1,53 @@
+# GitHub Actions workflow.
+#
+# Automatically deploys the microservice to Kubernetes on push to the main branch.
+# For real use, you might want to restrict this to the "prod" branch.
+
 name: Deploy Microservices
 
 on:
-  push:
+  #
+  # Deploy the microservice on push to any branch of this code repository.
+  #
+  push: 
     branches:
-      - master
+      - main
+
+  #
+  # Allows deployment to be invoked manually through the GitHub Actions user interface.
+  #
+  workflow_dispatch: 
 
 jobs:
-  build:
+
+  deploy:
     runs-on: ubuntu-latest
+    
+    env:
+      VERSION: ${{ github.sha }}
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
+      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
+      AKS_RESOURCE_GROUP: "deakinuni"
+      AKS_CLUSTER_NAME: "distinctionweek9"
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      
+      # Checks-out your repository under $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Log in to Azure
-        run: |
-          echo "${{ secrets.ARM_CLIENT_SECRET }}" | az login --service-principal -u "${{ secrets.ARM_CLIENT_ID }}" --tenant "${{ secrets.ARM_TENANT_ID }}" 
-      - name: Log in to Azure Container Registry
-        run: |
-          az acr login --name ${{ secrets.CONTAINER_REGISTRY }}
-
-      - name: Build and push book_catalog Docker image
-        run: |
-          docker build -t ${{ secrets.CONTAINER_REGISTRY }}/book_catalog:latest -f ./book_catalog/Dockerfile ./book_catalog
-          docker push ${{ secrets.CONTAINER_REGISTRY }}/book_catalog:latest
-
-      - name: Build and push inventory_management Docker image
-        run: |
-          docker build -t ${{ secrets.CONTAINER_REGISTRY }}/inventory_management:latest -f ./inventory_management/Dockerfile ./inventory_management
-          docker push ${{ secrets.CONTAINER_REGISTRY }}/inventory_management:latest
-
-  terraform:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
+      #
+      # Sets up Terraform for infrastructure management.
+      #
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
+      # Initialize Terraform
       - name: Initialize Terraform
         run: terraform init
+        working-directory: ./scripts/terraform
 
+      # Apply Terraform
       - name: Apply Terraform
         run: terraform apply -auto-approve
         env:
@@ -52,21 +55,30 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        working-directory: ./scripts/terraform
 
-      - name: Install kubectl
+      #
+      # Builds the Docker image.
+      #
+      - name: Build
+        run: ./scripts/build-image.sh
+
+      #
+      # Publishes the Docker image to the container registry.
+      #
+      - name: Publish
+        run: ./scripts/push-image.sh
+
+      #
+      # Installs Kubectl and connects it to the cluster.
+      #
+      - name: Install Kubectl
         run: |
           az aks install-cli
+          az aks get-credentials --resource-group ${{ env.AKS_RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
 
-      - name: Get AKS Credentials
-        run: |
-          az aks get-credentials --resource-group deakinuni --name distinctionweek9
-
-      - name: Deploy book_catalog to AKS
-        run: |
-          kubectl apply -f ./kubernetes/book_catalog/deployment.yaml
-          kubectl apply -f ./kubernetes/book_catalog/service.yaml
-
-      - name: Deploy inventory_management to AKS
-        run: |
-          kubectl apply -f ./kubernetes/inventory_management/deployment.yaml
-          kubectl apply -f ./kubernetes/inventory_management/service.yaml
+      #
+      # Expands the configuration template and deploys the microservice.
+      #
+      - name: Deploy
+        run: ./scripts/deploy.sh
